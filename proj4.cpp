@@ -1,6 +1,8 @@
 #include <iostream> 
 #include <vector>
 #include <fstream>
+#include <cctype>
+
 
 /** Thought Process:
  * --Input to Trie
@@ -41,53 +43,12 @@ struct TernaryNode {
     TernaryNode* left; //points to character less than our c (sibling word)
     TernaryNode* right; //points to character greater than our c (sibling word)
     TernaryNode* equal; //points to next character in word
-    int ptrCount;//? increment by 3 when new node is created
+    //int ptrCount;//? increment by 3 when new node is created
+    TernaryNode(bool eow, char c, TernaryNode* left, TernaryNode* right, TernaryNode* equal, int ptrCount) 
+        : eow(false), c('\0'), left(NULL), right(NULL), equal(NULL) {}
 };
 
 
-std::string parse(std::string& line){
-    //convert all characters to lowercase and remove punctuation marks
-    char c;
-    std::string token;
-    for (int i = 0; i < line.length(); i++) {
-        c = line[i];
-        //if c has any punctuation, special characteres, dashes, or double dashes, remove them
-        if (ispunct(line[i]))
-        {
-            line.erase(i--, 1);
-            std::cout << "Removed punctuation: " << c << std::endl;
-            continue;
-        }
-        c = tolower(line[i]);
-        token += c;
-    }
-
-    return token;
-}
-
-void readFile(std::string filename){
-    std::ifstream file(filename);
-
-    // try to open the file
-    if (!file.is_open()) 
-    {
-        std::cerr << "Error opening file: " << filename << std::endl;
-        return;
-    }
-    std::string line;
-
-    //read one word per line
-    while (std::getline(file,line))
-    {
-        //call parser token = parse(line)
-        //call functions to build tries and pass token to them
-        std::string token = parse(line);
-        buildArrTrie(token, TrieNode());
-        buildTernaryTrie(token, TernaryNode());
-
-    }
-    
-}
 
 int charIdx(char &c) { 
     int charIdx = int(c) - 65; // a = 0
@@ -129,17 +90,51 @@ void searchArrTrie(std::string prefix, bool findSiblings) {
 
 }
 
+void insertTernaryTrie(TernaryNode* node, std::string word, int i) {
+    if (i < word.size()) {
+        //keep inserting
+        if (word[i] == node->c) {
+            i++;
+        }
+        if (word[i] > node->c) {
+            if (node->right == NULL) {
+                TernaryNode *noode = new TernaryNode();
+                noode->c = word[i];
+                i++;
+            }
+            node = node->right;
+        }
+        if (word[i] < node->c) {
+            if (node->left == NULL) {
+                TernaryNode *nnode = new TernaryNode();
+                nnode->c = word[i];
+                i++;
+            }
+            node = node->left;
+        }
+    }
+    else {
+        node->eow = true;
+    }
+}
+
+void insert(TernaryNode* root, std::string word) {
+    insertTernaryTrie(root, word, 0);
+}
+
 //if findSiblings is true perform deeper search that will call printSiblings
-void searchTernaryTrie(std::string prefix, bool findSiblings) {
+bool searchTernaryTrie(std::string prefix, bool findSiblings, TernaryNode *root) {
     //iterate through linked lists
     //if prefix[i] == linked list element explore equal
     //if prefix[i] > node.c explore node.right
     //if prefix[i] < node.c explore node.left
     //if == explore node.equal
+
+    return false;
 }
 
-void buildArrTrie(std::string token, TrieNode root) {
-    for (char c : token){ 
+void buildArrTrie(std::vector<std::string> tokens, TrieNode root) {
+    for (const std::string& token : tokens) {
         //call search on c to see if node is already there if so return 
         //else create new node
         //insert new node
@@ -148,16 +143,76 @@ void buildArrTrie(std::string token, TrieNode root) {
     TrieNode node;
 }
 
-void buildTernaryTrie(std::string token, TernaryNode root) {
+void buildTernaryTrie(std::vector<std::string> tokens, TernaryNode* root) {
     //call search to make sure it's not already there
     //if not there create new node and insert
     //if end of token is reached and c is found set c.eow = true
+    for (const std::string& token : tokens) {
+        if (!searchTernaryTrie(token, false, root)) {
+            insert(root, token);
+        }
+        else {
+            std::cout << token << " already in trie" << std::endl;
+        }
+    }
+}
 
+std::string parse(std::string& line)
+{
+    //convert all characters to lowercase and remove punctuation marks
+    char c;
+    std::string token;
+    for (int i = 0; i < line.length(); i++) 
+    {
+        c = line[i];
+        //if c has any punctuation, special characteres, dashes, or double dashes, remove them
+        if (ispunct(line[i]))
+        {
+            line.erase(i--, 1);
+            std::cout << "Removed punctuation: " << c << std::endl;
+            continue;
+        }
+        c = tolower(line[i]);
+        token += c;
+    }
+
+    return token;
+}
+
+void readFile(std::string filename){
+    std::ifstream file(filename);
+
+    // try to open the file
+    if (!file.is_open()) 
+    {
+        std::cerr << "Error opening file: " << filename << std::endl;
+        return;
+    }
+    std::string line;
+    std::vector<std::string> tokens;
+
+    //read one word per line
+    while (std::getline(file,line))
+    {
+        //call parser token = parse(line)
+        //call functions to build tries and pass token to them
+        std::string token = parse(line);
+        tokens.push_back(token);
+    }
+
+    //
+    for (std::string& token : tokens) {
+        std::cout << "Token: " << token << std::endl;
+    }
+    buildArrTrie(tokens, TrieNode());
+    buildTernaryTrie(tokens, TernaryNode());
+
+    
 }
 
 
 int main() {
-    TernaryNode ternRoot;
+    TernaryNode* ternRoot = nullptr;
     TrieNode arrRoot;
 
     std::string userInput[] = {"Sunny-day", "Meow", "pecan pie", "seventy-five"};
