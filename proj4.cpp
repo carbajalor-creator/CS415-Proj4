@@ -1,5 +1,6 @@
 #include <iostream> 
 #include <vector>
+#include <fstream>
 
 /** Thought Process:
  * --Input to Trie
@@ -48,17 +49,44 @@ std::string parse(std::string& line){
     //convert all characters to lowercase and remove punctuation marks
     char c;
     std::string token;
-    for (char c : line) {
-        c = tolower(c);
+    for (int i = 0; i < line.length(); i++) {
+        c = line[i];
+        //if c has any punctuation, special characteres, dashes, or double dashes, remove them
+        if (ispunct(line[i]))
+        {
+            line.erase(i--, 1);
+            std::cout << "Removed punctuation: " << c << std::endl;
+            continue;
+        }
+        c = tolower(line[i]);
         token += c;
     }
+
     return token;
 }
 
 void readFile(std::string filename){
+    std::ifstream file(filename);
+
+    // try to open the file
+    if (!file.is_open()) 
+    {
+        std::cerr << "Error opening file: " << filename << std::endl;
+        return;
+    }
+    std::string line;
+
     //read one word per line
-    //call parser token = parse(line)
-    //call functions to build tries and pass token to them
+    while (std::getline(file,line))
+    {
+        //call parser token = parse(line)
+        //call functions to build tries and pass token to them
+        std::string token = parse(line);
+        buildArrTrie(token, TrieNode());
+        buildTernaryTrie(token, TernaryNode());
+
+    }
+    
 }
 
 int charIdx(char &c) { 
@@ -72,9 +100,10 @@ void output() {
     //number of operations to search in each trie (case 1: per prefix inputted, case 2: sum of operations for entire input file)
 }
 
-TrieNode searchArrHelper(int idx, char c) {
-    //is given an idx and returns array of node
-}
+// TrieNode searchArrHelper(int idx, char c) {
+//     //is given an idx and returns array of node
+//     return 0, ;
+// }
 
 void printSiblings(std::string prefix) {
     //dfs search on tries
@@ -130,5 +159,16 @@ void buildTernaryTrie(std::string token, TernaryNode root) {
 int main() {
     TernaryNode ternRoot;
     TrieNode arrRoot;
+
+    std::string userInput[] = {"Sunny-day", "Meow", "pecan pie", "seventy-five"};
+
+    for (std::string& c : userInput) {
+        std::string token = parse(c);
+        std::cout << "Token: " << token << std::endl;
+    }
+
+
+
+
     return 0;
 }
