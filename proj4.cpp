@@ -1,5 +1,6 @@
 #include <iostream> 
 #include <vector>
+#include <fstream>
 
 /** Thought Process:
  * --Input to Trie
@@ -40,7 +41,9 @@ struct TernaryNode {
     TernaryNode* left; //points to character less than our c (sibling word)
     TernaryNode* right; //points to character greater than our c (sibling word)
     TernaryNode* equal; //points to next character in word
-    int ptrCount;//? increment by 3 when new node is created
+    //int ptrCount;//? increment by 3 when new node is created
+    TernaryNode(bool eow, char c, TernaryNode* left, TernaryNode* right, TernaryNode* equal, int ptrCount) 
+        : eow(false), c('\0'), left(NULL), right(NULL), equal(NULL) {}
 };
 
 
@@ -49,8 +52,10 @@ std::string parse(std::string& line){
     char c;
     std::string token;
     for (char c : line) {
-        c = tolower(c);
-        token += c;
+        if (isalpha(c)) {
+            c = tolower(c);
+            token += c;
+        }
     }
     return token;
 }
@@ -59,6 +64,18 @@ void readFile(std::string filename){
     //read one word per line
     //call parser token = parse(line)
     //call functions to build tries and pass token to them
+    std::ifstream file (filename);
+    std::string line;
+    std::string token;
+    std::vector<std::string> tokens;
+    if(!file.is_open()) {
+        std::cout << "Error: Unable to open file " << filename << std::endl;
+        return;
+    }
+    while (std::getline(file, line)) {
+        token = parse(line);
+        tokens.push_back(token);
+    }
 }
 
 int charIdx(char &c) { 
@@ -100,13 +117,47 @@ void searchArrTrie(std::string prefix, bool findSiblings) {
 
 }
 
+void insertTernaryTrie(TernaryNode* node, std::string word, int i) {
+    if (i < word.size()) {
+        //keep inserting
+        if (word[i] == node->c) {
+            i++;
+        }
+        if (word[i] > node->c) {
+            if (node->right == NULL) {
+                TernaryNode *noode = new TernaryNode();
+                noode->c = word[i];
+                i++;
+            }
+            node = node->right;
+        }
+        if (word[i] < node->c) {
+            if (node->left == NULL) {
+                TernaryNode *nnode = new TernaryNode();
+                nnode->c = word[i];
+                i++;
+            }
+            node = node->left;
+        }
+    }
+    else {
+        node->eow = true;
+    }
+}
+
+void insert(TernaryNode* root, std::string word) {
+    insertTernaryTrie(root, word, 0);
+}
+
 //if findSiblings is true perform deeper search that will call printSiblings
-void searchTernaryTrie(std::string prefix, bool findSiblings) {
+bool searchTernaryTrie(std::string prefix, bool findSiblings, TernaryNode *root) {
     //iterate through linked lists
     //if prefix[i] == linked list element explore equal
     //if prefix[i] > node.c explore node.right
     //if prefix[i] < node.c explore node.left
     //if == explore node.equal
+
+    return false;
 }
 
 void buildArrTrie(std::string token, TrieNode root) {
@@ -119,10 +170,16 @@ void buildArrTrie(std::string token, TrieNode root) {
     TrieNode node;
 }
 
-void buildTernaryTrie(std::string token, TernaryNode root) {
+void buildTernaryTrie(std::string token, TernaryNode* root) {
     //call search to make sure it's not already there
     //if not there create new node and insert
     //if end of token is reached and c is found set c.eow = true
+    if (!searchTernaryTrie(token, false, root)) {
+        insert(root, token);
+    }
+    else {
+        std::cout << token << " already in trie" << std::endl;
+    }
 
 }
 
