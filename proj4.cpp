@@ -32,9 +32,11 @@
 struct TrieNode {
     bool eow; //end of word
     char c; //value
-    std::vector<TrieNode> child[26]; //alphabet array
+    TrieNode* child[26]; //alphabet array
     int ptrCount;//? do we need it? we can just multiply 26 x number of nodes
 };
+
+
 
 struct TernaryNode {
     bool eow;
@@ -43,10 +45,13 @@ struct TernaryNode {
     TernaryNode* right; //points to character greater than our c (sibling word)
     TernaryNode* equal; //points to next character in word
     //int ptrCount;//? increment by 3 when new node is created
-    TernaryNode(bool eow, char c, TernaryNode* left, TernaryNode* right, TernaryNode* equal, int ptrCount) 
-        : eow(false), c('\0'), left(NULL), right(NULL), equal(NULL) {}
+    TernaryNode(bool eow, char c, TernaryNode* left, TernaryNode* right, TernaryNode* equal, int ptrCount);
+    
 };
 
+//constructor for TernaryNode
+TernaryNode::TernaryNode(bool eow, char c, TernaryNode* left, TernaryNode* right, TernaryNode* equal, int ptrCount) 
+        : eow(false), c('\0'), left(NULL), right(NULL), equal(NULL) {}
 
 std::string parse(std::string& line)
 {
@@ -138,37 +143,37 @@ void searchArrTrie(std::string prefix, bool findSiblings) {
 
 }
 
-void insertTernaryTrie(TernaryNode* node, std::string word, int i) {
-    if (i < word.size()) {
-        //keep inserting
-        if (word[i] == node->c) {
-            i++;
-        }
-        if (word[i] > node->c) {
-            if (node->right == NULL) {
-                TernaryNode *noode = new TernaryNode();
-                noode->c = word[i];
-                i++;
-            }
-            node = node->right;
-        }
-        if (word[i] < node->c) {
-            if (node->left == NULL) {
-                TernaryNode *nnode = new TernaryNode();
-                nnode->c = word[i];
-                i++;
-            }
-            node = node->left;
-        }
-    }
-    else {
-        node->eow = true;
-    }
-}
+// void insertTernaryTrie(TernaryNode* node, std::string word, int i) {
+//     if (i < word.size()) {
+//         //keep inserting
+//         if (word[i] == node->c) {
+//             i++;
+//         }
+//         if (word[i] > node->c) {
+//             if (node->right == NULL) {
+//                 TernaryNode *nnode = new TernaryNode();
+//                 nnode->c = word[i];
+//                 i++;
+//             }
+//             node = node->right;
+//         }
+//         if (word[i] < node->c) {
+//             if (node->left == NULL) {
+//                 TernaryNode *nnode = new TernaryNode();
+//                 nnode->c = word[i];
+//                 i++;
+//             }
+//             node = node->left;
+//         }
+//     }
+//     else {
+//         node->eow = true;
+//     }
+// }
 
-void insert(TernaryNode* root, std::string word) {
-    insertTernaryTrie(root, word, 0);
-}
+// void insert(TernaryNode* root, std::string word) {
+//     insertTernaryTrie(root, word, 0);
+// }
 
 //if findSiblings is true perform deeper search that will call printSiblings
 bool searchTernaryTrie(std::string prefix, bool findSiblings, TernaryNode *root) {
@@ -181,32 +186,54 @@ bool searchTernaryTrie(std::string prefix, bool findSiblings, TernaryNode *root)
     return false;
 }
 
-void buildArrTrie(std::string token, TrieNode root) {
-    for (char c : token){ 
-        //call search on c to see if node is already there if so return 
-        //else create new node
-        //insert new node
-        //if end of token is reached and c is found set c.eow = true    
-    }
-    TrieNode node;
+void buildArrTrie(std::string token, TrieNode &root) 
+{
+    TrieNode* currentNode = &root;
+
+    //we iterate across the chars inside of each string
+    for (int i = 0; i < token.length(); i++)
+    {
+        // is this seat taken?
+        if (currentNode->child[token[i] - 'a'] == NULL)
+        {
+            //no? then dont mind if i do
+            TrieNode *newNode = new TrieNode();
+            std::cout << "character: " << token[i] << std::endl;
+
+            //im gonna leave my jacket here to remind me, that this seat is mine
+            currentNode->child[token[i] - 'a'] = newNode;
+            
+        }
+
+        //oh darn the seat is taken
+        //let me just move to the next row of seats
+        currentNode = currentNode->child[token[i] - 'a'];
+
+    } 
+    //all done
+    currentNode->eow = true;   
 }
 
-void buildTernaryTrie(std::string token, TernaryNode* root) {
-    //call search to make sure it's not already there
-    //if not there create new node and insert
-    //if end of token is reached and c is found set c.eow = true
-    if (!searchTernaryTrie(token, false, root)) {
-        insert(root, token);
-    }
-    else {
-        std::cout << token << " already in trie" << std::endl;
-    }
+// void buildTernaryTrie(const std::string &token, TernaryNode* root) {
+//     //call search to make sure it's not already there
+//     //if end of token is reached and c is found set c.eow = true
+//     //if not there create new node and insert
 
-}
+//     if (!searchTernaryTrie(token, false, root)) 
+//     {
+//         insert(root, token);
+        
+//     }
+//     else {
+//         std::cout << token << " already in trie" << std::endl;
+//     }
+
+    
+// }
 
 
 int main() {
-    TernaryNode ternRoot;
+    // TernaryNode ternRoot(false, '\0', NULL, NULL, NULL, 0);
     TrieNode arrRoot;
 
     std::string userInput[] = {"Sunny-day", "Meow", "pecan pie", "seventy-five"};
@@ -215,6 +242,8 @@ int main() {
         std::string token = parse(c);
         std::cout << "Token: " << token << std::endl;
     }
+
+    buildArrTrie("sunnyday", arrRoot);
 
 
 
