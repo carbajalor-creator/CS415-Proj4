@@ -143,23 +143,42 @@ void prefixSearchArrTrie(std::string prefix, bool findSiblings) {
 
 }
 
-//regular search for a word in the array trie
-void searchArrTrie(std::string token, TrieNode &root) 
+//regular search for a word and prefix search, we will check the type of flags that are being used first and then go from there
+void prefix_and_searchArrTrie(std::string token, TrieNode &root, bool findSiblings, std::string prefix) 
 {
     //first we are going to copy the root,
     TrieNode* currentNode = &root;
-    
+
+    //if flag is == 1, then we need prefix search
     //then we iterate through tokens[chars] and check if the child pointer is null or not
     for (int i = 0; i < token.length(); i++)
     {
-        //if it is null we return not found
-        if (currentNode->child[token[i] - 'a'] == nullptr)
+        //if the letters are equal to each other
+        if (currentNode->child[token[i] - charIdx(token[i])] == nullptr)
         {
             return false;
         }
 
         //we are then going to move the currentNode ptr to existing node
-        currentNode = currentNode->child[token[i] - 'a'];
+        currentNode = currentNode->child[token[i] - charIdx(token[i])];
+
+    }
+    //once we are outside of the for loop we are going to return true
+    //we are going to call printSiblings if findSiblings is true
+
+
+    //if flag is == 2, then we need to search for a word
+    //then we iterate through tokens[chars] and check if the child pointer is null or not
+    for (int i = 0; i < token.length(); i++)
+    {
+        //if it is null we return not found
+        if (currentNode->child[token[i] - charIdx(token[i])] == nullptr)
+        {
+            return false;
+        }
+
+        //we are then going to move the currentNode ptr to existing node
+        currentNode = currentNode->child[token[i] - charIdx(token[i])];
 
     }
     //otherwise we say its true if the word does exist
@@ -219,20 +238,20 @@ void buildArrTrie(std::string token, TrieNode &root)
     for (int i = 0; i < token.length(); i++)
     {
         // is this seat taken?
-        if (currentNode->child[token[i] - 'a'] == nullptr)
+        if (currentNode->child[token[i] - charIdx(token[i])] == nullptr)
         {
             //no? then dont mind if i do
             TrieNode *newNode = new TrieNode();
             std::cout << "character: " << token[i] << std::endl;
 
             //im gonna leave my jacket here to remind me, that this seat is mine
-            currentNode->child[token[i] - 'a'] = newNode;
+            currentNode->child[token[i] - charIdx(token[i])] = newNode;
             
         }
 
         //oh darn the seat is taken
         //let me just move to the next row of seats
-        currentNode = currentNode->child[token[i] - 'a'];
+        currentNode = currentNode->child[token[i] - charIdx(token[i])];
 
     } 
     //all done
