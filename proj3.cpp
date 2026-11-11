@@ -127,7 +127,7 @@ void printSiblings(std::string prefix) {
     //if node ptrs all point to null popback explore next branch
 }
 
-void searchArrTrie(std::string prefix, bool findSiblings) {
+void prefixSearchArrTrie(std::string prefix, bool findSiblings) {
     //call charIdx to build list of indexes from prefix
     std::vector<int> prefixIndices;
     for (char c : prefix) {
@@ -141,6 +141,31 @@ void searchArrTrie(std::string prefix, bool findSiblings) {
         //recursively searches deeper? or have a function that is given an array and searches for a letter and returns array
     }
 
+}
+
+//regular search for a word in the array trie
+void searchArrTrie(std::string token, TrieNode &root) 
+{
+    //first we are going to copy the root,
+    TrieNode* currentNode = &root;
+    
+    //then we iterate through tokens[chars] and check if the child pointer is null or not
+    for (int i = 0; i < token.length(); i++)
+    {
+        //if it is null we return not found
+        if (currentNode->child[token[i] - 'a'] == nullptr)
+        {
+            return false;
+        }
+
+        //we are then going to move the currentNode ptr to existing node
+        currentNode = currentNode->child[token[i] - 'a'];
+
+    }
+    //otherwise we say its true if the word does exist
+    return currentNode->eow;
+    
+    
 }
 
 // void insertTernaryTrie(TernaryNode* node, std::string word, int i) {
@@ -194,7 +219,7 @@ void buildArrTrie(std::string token, TrieNode &root)
     for (int i = 0; i < token.length(); i++)
     {
         // is this seat taken?
-        if (currentNode->child[token[i] - 'a'] == NULL)
+        if (currentNode->child[token[i] - 'a'] == nullptr)
         {
             //no? then dont mind if i do
             TrieNode *newNode = new TrieNode();
@@ -214,37 +239,32 @@ void buildArrTrie(std::string token, TrieNode &root)
     currentNode->eow = true;   
 }
 
-// void buildTernaryTrie(const std::string &token, TernaryNode* root) {
-//     //call search to make sure it's not already there
-//     //if end of token is reached and c is found set c.eow = true
-//     //if not there create new node and insert
+void buildTernaryTrie(const std::string &token, TernaryNode* root) {
+    //call search to make sure it's not already there
+    //if end of token is reached and c is found set c.eow = true
+    //if not there create new node and insert
 
-//     if (!searchTernaryTrie(token, false, root)) 
-//     {
-//         insert(root, token);
+    if (!searchTernaryTrie(token, false, root)) 
+    {
+        insert(root, token);
         
-//     }
-//     else {
-//         std::cout << token << " already in trie" << std::endl;
-//     }
+    }
+    else {
+        std::cout << token << " already in trie" << std::endl;
+    }
 
     
-// }
+}
 
 
 int main() {
     // TernaryNode ternRoot(false, '\0', NULL, NULL, NULL, 0);
     TrieNode arrRoot;
 
-    std::string userInput[] = {"Sunny-day", "Meow", "pecan pie", "seventy-five"};
+    std::string filename = cin >> "Enter filename: ";
+    readFile(filename);
 
-    for (std::string& c : userInput) {
-        std::string token = parse(c);
-        std::cout << "Token: " << token << std::endl;
-    }
-
-    buildArrTrie("sunnyday", arrRoot);
-
+    
 
 
 
