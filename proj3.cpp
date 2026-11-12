@@ -96,9 +96,11 @@ void readFile(std::string filename){
         tokens.push_back(token);
     }
 
-    
-    // buildArrTrie(tokens, TrieNode());
-    // buildTernaryTrie(tokens, TernaryNode());
+    //yay we close the file
+    file.close();
+    //pass the tokens to buildArrTrie and buildTernaryTrie
+    buildArrTrie(tokens, TrieNode());
+    buildTernaryTrie(tokens, TernaryNode());
 
     
 }
@@ -142,6 +144,9 @@ void prefixSearchArrTrie(std::string prefix, bool findSiblings) {
     }
 
 }
+
+
+
 
 //regular search for a word and prefix search, we will check the type of flags that are being used first and then go from there
 void prefix_and_searchArrTrie(std::string token, TrieNode &root, bool findSiblings, std::string prefix) 
@@ -276,13 +281,34 @@ void buildTernaryTrie(const std::string &token, TernaryNode* root) {
 }
 
 
-int main() {
-    // TernaryNode ternRoot(false, '\0', NULL, NULL, NULL, 0);
-    TrieNode arrRoot;
+int main(int argc, char* argv[]) 
+{
+    //ask the user for input and the case they are using (search or prefix search)
+    if (argc < 3)
+    {
+        std::cerr << "Please provide a valid file name and case type (autocomplete search: 1, regular search: 2)." << std::endl;
+    }
+    
+    //grab file name and case type from user
+    std::string filename = argv[1];
+    std::string caseType = argv[2];
 
-    std::string filename = cin >> "Enter filename: ";
+
+    //check if caseType is valid
+    if (caseType == "1" || caseType == "2")
+    {
+        std::cerr << "Please provide a valid case type (autocomplete search: 1, regular search: 2)." << std::endl;
+    }
+
+    //ok cool, then we are going to pass the file to readFile
     readFile(filename);
 
+
+    //create root nodes for both tries
+    TrieNode arrRoot;
+    TernaryNode ternaryRoot(false, '\0', NULL, NULL, NULL, 0);
+
+    
     
 
 
