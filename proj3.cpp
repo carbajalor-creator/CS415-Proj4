@@ -55,7 +55,8 @@ TernaryNode::TernaryNode(bool eow, char c, TernaryNode* left, TernaryNode* right
 
 
 //helper function to convert char to index
-int charIdx(char &c) { 
+int charIdx(char c) 
+{ 
     int charIdx = int(c) - 65; // a = 0
     return charIdx;
 }
@@ -199,6 +200,7 @@ bool prefix_and_searchArrTrie(std::string token, TrieNode &root, bool findSiblin
     TrieNode* currentNode = &root;
     int* caseNum = &caseType;
     currentNode->eow = false;
+    
 
     
     if (*caseNum == 1)//if flag is == 1, then we need prefix search
