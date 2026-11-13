@@ -2,6 +2,7 @@
 #include <vector>
 #include <fstream>
 #include <string>
+#include <cctype>
 
 
 /** Thought Process:
@@ -31,10 +32,16 @@
 
 
 struct TrieNode {
-    bool eow; //end of word
+    bool eow = false; //end of word
     char c; //value
-    std::vector<TrieNode> child[26]; //alphabet array
-    int ptrCount;//? do we need it? we can just multiply 26 x number of nodes
+    TrieNode* child[26]; //alphabet array
+
+    TrieNode() 
+    {
+        for (int i = 0; i < 26; i++) {
+            child[i] = nullptr;
+        }
+    }
 };
 
 struct TernaryNode {
@@ -48,9 +55,12 @@ struct TernaryNode {
     
 };
 
-//constructor for TernaryNode
-TernaryNode::TernaryNode(bool eow, char c, TernaryNode* left, TernaryNode* right, TernaryNode* equal, int ptrCount) 
-        : eow(false), c('\0'), left(NULL), right(NULL), equal(NULL) {}
+
+
+int charIdx(char &c) { 
+    int charIdx = int(c) - 97; // a = 0
+    return charIdx;
+}
 
 std::string parse(std::string& line) //add guarding if string is empty
 {
@@ -75,31 +85,29 @@ std::string parse(std::string& line) //add guarding if string is empty
 }
 
 
-void buildArrTrie(std::vector<std::string> tokens, TrieNode &root) 
+void buildArrTrie(std::string token, TrieNode &root) 
 {
     TrieNode* currentNode = &root;
 
     //we iterate across the chars inside of each string
-    for (size_t i = 0; i < tokens.size(); i++)
+    for (size_t i = 0; i < token.length(); i++)
     {
-        for (size_t j = 0; j < tokens[i].length(); j++)
-        {
-            //converting letter into a number to check
-            int letter = charIdx(tokens[i][j]);
+        //converting letter into a number to check
+        int letter = charIdx(token[i]);
 
-            // is this seat taken?
-            if ((currentNode->child[letter]) == nullptr)
+        // is this seat taken?
+        if ((currentNode->child[letter]) == nullptr)
             {
                 //no? then dont mind if i do
                 TrieNode *newNode = new TrieNode();
-                std::cout << "character: " << tokens[i][j] << std::endl;
+                std::cout << "character: " << token[i] << std::endl;
                 //im gonna leave my jacket here to remind me, that this seat is mine
-                currentNode->child[charIdx(tokens[i][j])] = newNode;
+                currentNode->child[charIdx(token[i])] = newNode;
             }
-            //oh darn the seat is taken
-            //let me just move to the next row of seats
-            currentNode = currentNode->child[charIdx(tokens[i][j])];
-        }
+        //oh darn the seat is taken
+        //let me just move to the next row of seats
+        currentNode = currentNode->child[charIdx(token[i])];
+        
         //all done
         currentNode->eow = true;  
         
@@ -109,16 +117,9 @@ void buildArrTrie(std::vector<std::string> tokens, TrieNode &root)
 
 
 
-void readFile(std::string filename, TrieNode &root){
+std::vector<std::string> readFile(std::string filename)
+{
     std::ifstream file(filename);
-    TrieNode* currentNode = &root;
-
-    // try to open the file
-    if (!file.is_open()) 
-    {
-        std::cerr << "Error opening file: " << filename << std::endl;
-        return;
-    }
     std::string line;
     std::vector<std::string> tokens;
 
@@ -134,18 +135,14 @@ void readFile(std::string filename, TrieNode &root){
 
     //yay we close the file
     file.close();
-    //pass the tokens to buildArrTrie and buildTernaryTrie
-    buildArrTrie(tokens, *currentNode);
-    
+
+    //pass the tokens to buildArrTrie and buildTernaryTrie    
     //buildTernaryTrie(tokens, TernaryNode());
 
     
 }
 
-int charIdx(char &c) { 
-    int charIdx = int(c) - 97; // a = 0
-    return charIdx;
-}
+
 
 void output() {
     //print time takes to build tries (as a number of operations)
@@ -245,40 +242,85 @@ void searchArrTrie(std::string prefix, bool findSiblings) {
 
 }
 */
-TernaryNode* insertTernaryTrie(TernaryNode* node, std::string word, int i, int &ternOpCount) {
-    if (node == NULL) {
-        node = new TernaryNode(word[i]);
-        ternOpCount++;
-    }
-    if (word[i] == node->c) {
-        ternOpCount++;
-        if ( i < word.size() - 1) {
-            node->equal = insertTernaryTrie(node->equal, word, i + 1, ternOpCount);
-            ternOpCount++;
-        }
-        else if ( i == word.size() - 1) { 
-            node->eow = true;
-            ternOpCount++;
-            return node; //are we at the end of the word 
-        }
-    }
-    else if ( word[i] > node->c) {
-        ternOpCount++; //update for the comparison
-        node->right = insertTernaryTrie(node->right, word, i, ternOpCount);
-        ternOpCount++; //for the assignment
-    }
-    else if (word[i] < node->c) {
-        ternOpCount++; //update for the comparison
-        node->left = insertTernaryTrie(node->left, word, i, ternOpCount);
-        ternOpCount++; //update for the assignment
-    }
-    return node;
+// TernaryNode* insertTernaryTrie(TernaryNode* node, std::string word, int i, int &ternOpCount) {
+//     if (node == NULL) {
+//         node = new TernaryNode(word[i]);
+//         ternOpCount++;
+//     }
+//     if (word[i] == node->c) {
+//         ternOpCount++;
+//         if ( i < word.size() - 1) {
+//             node->equal = insertTernaryTrie(node->equal, word, i + 1, ternOpCount);
+//             ternOpCount++;
+//         }
+//         else if ( i == word.size() - 1) { 
+//             node->eow = true;
+//             ternOpCount++;
+//             return node; //are we at the end of the word 
+//         }
+//     }
+//     else if ( word[i] > node->c) {
+//         ternOpCount++; //update for the comparison
+//         node->right = insertTernaryTrie(node->right, word, i, ternOpCount);
+//         ternOpCount++; //for the assignment
+//     }
+//     else if (word[i] < node->c) {
+//         ternOpCount++; //update for the comparison
+//         node->left = insertTernaryTrie(node->left, word, i, ternOpCount);
+//         ternOpCount++; //update for the assignment
+//     }
+//     return node;
 
-}
+// }
 
-TernaryNode* insert(TernaryNode* root, std::string word, int &ternOpCount) { //this should probably be changed to take both array and ternary tries
-    return insertTernaryTrie(root, word, 0, ternOpCount);
-}
+// TernaryNode* insert(TernaryNode* root, std::string word, int &ternOpCount) { //this should probably be changed to take both array and ternary tries
+//     return insertTernaryTrie(root, word, 0, ternOpCount);
+// }
+
+
+// //regular search for a word and prefix search, we will check the type of flags that are being used first and then go from there
+// void prefix_and_searchArrTrie(std::string token, TrieNode &root, bool findSiblings, std::string prefix) 
+// {
+//     //first we are going to copy the root,
+//     TrieNode* currentNode = &root;
+
+//     //if flag is == 1, then we need prefix search
+//     //then we iterate through tokens[chars] and check if the child pointer is null or not
+//     for (int i = 0; i < token.length(); i++)
+//     {
+//         //if the letters are equal to each other
+//         if (currentNode->child[token[i] - charIdx(token[i])] == nullptr)
+//         {
+//             return false;
+//         }
+
+//         //we are then going to move the currentNode ptr to existing node
+//         currentNode = currentNode->child[token[i] - charIdx(token[i])];
+
+//     }
+//     //once we are outside of the for loop we are going to return true
+//     //we are going to call printSiblings if findSiblings is true
+
+
+//     //if flag is == 2, then we need to search for a word
+//     //then we iterate through tokens[chars] and check if the child pointer is null or not
+//     for (int i = 0; i < token.length(); i++)
+//     {
+//         //if it is null we return not found
+//         if (currentNode->child[token[i] - charIdx(token[i])] == nullptr)
+//         {
+//             return false;
+//         }
+
+//         //we are then going to move the currentNode ptr to existing node
+//         currentNode = currentNode->child[token[i] - charIdx(token[i])];
+
+//     }
+//     //otherwise we say its true if the word does exist
+//     return currentNode->eow;
+    
+    
+// }
 
 bool searchTernaryTrie(std::string &prefix, TernaryNode *node) { 
     //iterate through linked lists
@@ -308,48 +350,20 @@ bool searchTernaryTrie(std::string &prefix, TernaryNode *node) {
     }
     return false;
 }
-/* 
-void buildArrTrie(std::string token, TrieNode &root) 
-{
-    TrieNode* currentNode = &root;
 
-    //we iterate across the chars inside of each string
-    for (int i = 0; i < token.length(); i++)
-    {
-        // is this seat taken?
-        if (currentNode->child[token[i] - 'a'] == NULL)
-        {
-            //no? then dont mind if i do
-            TrieNode *newNode = new TrieNode();
-            std::cout << "character: " << token[i] << std::endl;
+// void buildTernaryTrie(std::string token, TernaryNode* &root, int &ternOpCount) {
+//     //call search to make sure it's not already there
+//     //if not there create new node and insert
+//     //if end of token is reached and c is found set c.eow = true
+//     if (token.empty()) return;
+//     if (!searchTernaryTrie(token, root)) {
+//         root = insert(root, token, ternOpCount);
+//     }
+//     else {
+//         std::cout << token << " already in trie" << std::endl;
+//     }
 
-            //im gonna leave my jacket here to remind me, that this seat is mine
-            currentNode->child[token[i] - 'a'] = newNode;
-            
-        }
-
-        //oh darn the seat is taken
-        //let me just move to the next row of seats
-        currentNode = currentNode->child[token[i] - 'a'];
-
-    } 
-    //all done
-    currentNode->eow = true;   
-}
-*/
-void buildTernaryTrie(std::string token, TernaryNode* &root, int &ternOpCount) {
-    //call search to make sure it's not already there
-    //if not there create new node and insert
-    //if end of token is reached and c is found set c.eow = true
-    if (token.empty()) return;
-    if (!searchTernaryTrie(token, root)) {
-        root = insert(root, token, ternOpCount);
-    }
-    else {
-        std::cout << token << " already in trie" << std::endl;
-    }
-
-}
+// }
 
 
 int main(int argc, char* argv[]) {
@@ -362,19 +376,14 @@ int main(int argc, char* argv[]) {
 
     std::string prefix;
     std::vector<std::string> tokens = readFile(filename);
-    std::vector<std::string> ternSiblingWords;
 
-    for (int i = 0; i < tokens.size(); i++) {
-        buildTernaryTrie(tokens[i], root, ternOpCount);
-        buildArrTrie(tokens[i], arrRoot);
-        //also add build array trie here
+    // check if tokens is empty
+    if (tokens.empty()) {
+        std::cerr << "Error: No tokens found in file " << filename << std::endl;
+        return 1;
     }
-    std::cout<< "Number of operations for ternary trie: " << ternOpCount <<std::endl;
-    std::cout << "Enter a prefix: ";
-    std::cin >> prefix;
 
-    ternSiblingWords = findSiblings(prefix, root, ternOpCount);
-    printSiblings(prefix, root, ternOpCount);
+    std::vector<std::string> ternSiblingWords;
 
     //ask the user for input and the case they are using (search or prefix search)
     if (argc != 3)
@@ -389,8 +398,19 @@ int main(int argc, char* argv[]) {
         std::cerr << "Please provide a valid case type (autocomplete search: 1, regular search: 2)." << std::endl;
     }
 
-    //ok cool, then we are going to pass the file to readFile
-    readFile(filename, root);
+    for (int i = 0; i < tokens.size(); i++) {
+        //buildTernaryTrie(tokens[i], root, ternOpCount);
+        buildArrTrie(tokens[i], arrRoot);
+        //also add build array trie here
+    }
+    std::cout<< "Number of operations for ternary trie: " << ternOpCount <<std::endl;
+    std::cout << "Enter a prefix: ";
+    std::cin >> prefix;
+
+    ternSiblingWords = findSiblings(prefix, root, ternOpCount);
+    printSiblings(prefix, root, ternOpCount);
+
+    
 
     return 0;
 }
