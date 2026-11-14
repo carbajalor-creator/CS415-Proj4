@@ -225,6 +225,8 @@ void printSiblings(std::string prefix, TernaryNode* &root, int &ternOpCount) {
         std::cout << ternSiblings[i] << std::endl;
     }
 }
+
+
 /*
 void searchArrTrie(std::string prefix, bool findSiblings) {
     //call charIdx to build list of indexes from prefix
@@ -242,40 +244,41 @@ void searchArrTrie(std::string prefix, bool findSiblings) {
 
 }
 */
-// TernaryNode* insertTernaryTrie(TernaryNode* node, std::string word, int i, int &ternOpCount) {
-//     if (node == NULL) {
-//         node = new TernaryNode(word[i]);
-//         ternOpCount++;
-//     }
-//     if (word[i] == node->c) {
-//         ternOpCount++;
-//         if ( i < word.size() - 1) {
-//             node->equal = insertTernaryTrie(node->equal, word, i + 1, ternOpCount);
-//             ternOpCount++;
-//         }
-//         else if ( i == word.size() - 1) { 
-//             node->eow = true;
-//             ternOpCount++;
-//             return node; //are we at the end of the word 
-//         }
-//     }
-//     else if ( word[i] > node->c) {
-//         ternOpCount++; //update for the comparison
-//         node->right = insertTernaryTrie(node->right, word, i, ternOpCount);
-//         ternOpCount++; //for the assignment
-//     }
-//     else if (word[i] < node->c) {
-//         ternOpCount++; //update for the comparison
-//         node->left = insertTernaryTrie(node->left, word, i, ternOpCount);
-//         ternOpCount++; //update for the assignment
-//     }
-//     return node;
 
-// }
+TernaryNode* insertTernaryTrie(TernaryNode* node, std::string word, int i, int &ternOpCount) {
+    if (node == NULL) {
+        node = new TernaryNode(word[i]);
+        ternOpCount++;
+    }
+    if (word[i] == node->c) {
+        ternOpCount++;
+        if ( i < word.size() - 1) {
+            node->equal = insertTernaryTrie(node->equal, word, i + 1, ternOpCount);
+            ternOpCount++;
+        }
+        else if ( i == word.size() - 1) { 
+            node->eow = true;
+            ternOpCount++;
+            return node; //are we at the end of the word 
+        }
+    }
+    else if ( word[i] > node->c) {
+        ternOpCount++; //update for the comparison
+        node->right = insertTernaryTrie(node->right, word, i, ternOpCount);
+        ternOpCount++; //for the assignment
+    }
+    else if (word[i] < node->c) {
+        ternOpCount++; //update for the comparison
+        node->left = insertTernaryTrie(node->left, word, i, ternOpCount);
+        ternOpCount++; //update for the assignment
+    }
+    return node;
 
-// TernaryNode* insert(TernaryNode* root, std::string word, int &ternOpCount) { //this should probably be changed to take both array and ternary tries
-//     return insertTernaryTrie(root, word, 0, ternOpCount);
-// }
+}
+
+TernaryNode* insert(TernaryNode* root, std::string word, int &ternOpCount) { //this should probably be changed to take both array and ternary tries
+    return insertTernaryTrie(root, word, 0, ternOpCount);
+}
 
 
 // //regular search for a word and prefix search, we will check the type of flags that are being used first and then go from there
@@ -351,19 +354,19 @@ bool searchTernaryTrie(std::string &prefix, TernaryNode *node) {
     return false;
 }
 
-// void buildTernaryTrie(std::string token, TernaryNode* &root, int &ternOpCount) {
-//     //call search to make sure it's not already there
-//     //if not there create new node and insert
-//     //if end of token is reached and c is found set c.eow = true
-//     if (token.empty()) return;
-//     if (!searchTernaryTrie(token, root)) {
-//         root = insert(root, token, ternOpCount);
-//     }
-//     else {
-//         std::cout << token << " already in trie" << std::endl;
-//     }
+void buildTernaryTrie(std::string token, TernaryNode* &root, int &ternOpCount) {
+    //call search to make sure it's not already there
+    //if not there create new node and insert
+    //if end of token is reached and c is found set c.eow = true
+    if (token.empty()) return;
+    if (!searchTernaryTrie(token, root)) {
+        root = insert(root, token, ternOpCount);
+    }
+    else {
+        std::cout << token << " already in trie" << std::endl;
+    }
 
-// }
+}
 
 
 int main(int argc, char* argv[]) {
@@ -399,7 +402,7 @@ int main(int argc, char* argv[]) {
     }
 
     for (int i = 0; i < tokens.size(); i++) {
-        //buildTernaryTrie(tokens[i], root, ternOpCount);
+        buildTernaryTrie(tokens[i], root, ternOpCount);
         buildArrTrie(tokens[i], arrRoot);
         //also add build array trie here
     }
